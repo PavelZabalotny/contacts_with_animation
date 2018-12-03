@@ -1,0 +1,3 @@
+rootProject.name = 'contacts_with_animation'
+
+include ':app'
