@@ -12,13 +12,26 @@ import {
   Text,
   View,
   Button,
-  PermissionsAndroid
+  PermissionsAndroid,
+  SectionList,
+  Animated,
+  ScrollView
 } from "react-native"
 import Contacts from "react-native-contacts"
+import ContactsList from "./Components/ContactsList"
 
 export default class App extends Component {
   state = {
-    isButtonPress: false
+    isButtonPress: false,
+    //contacts: [],
+    listA: [],
+    listB: [],
+    titles: ["titleA", "titleB"],
+    contacts: [],
+    TitleA: true,
+    TitleB: true,
+    fadeAnim: new Animated.Value(1)
+    //isHidden: false
   }
 
   async requestContactsPermission() {
@@ -65,7 +78,23 @@ export default class App extends Component {
   }
 
   render() {
-    const { isButtonPress } = this.state
+    const {
+      isButtonPress,
+      listA,
+      listB,
+      TitleA,
+      TitleB,
+      fadeAnim,
+      titles,
+      contacts
+    } = this.state
+    const a = TitleA ? listA : []
+    const b = TitleB ? listB : []
+
+    //newContacts = contacts.map(item => `${item.familyName} ${item.givenName}`)
+
+    /* const listA = newContacts.slice(0, 10)
+    const listB = newContacts.slice(10) */
 
     return (
       <View style={styles.container}>
@@ -76,7 +105,31 @@ export default class App extends Component {
           accessibilityLabel="Get contacts from your phone"
         />
         {isButtonPress ? (
-          <Text>Contacts</Text>
+          <ScrollView>
+            {/* <SectionList
+                sections={[
+                  { title: "TitleA", data: a },
+                  { title: "TitleB", data: b }
+                ]}
+                renderSectionHeader={({ section: { title } }) => (
+                  <Text
+                    style={styles.header}
+                    onPress={this.onTitlePressed(title)}
+                  >
+                    {title}
+                  </Text>
+                )}
+                renderItem={({ item }) => (
+                  <Animated.View style={{opacity: fadeAnim}}>
+                    <Text style={styles.contacts}>{item}</Text>
+                  </Animated.View>
+                )}
+                keyExtractor={(item, index) => index}
+              /> */}
+            {titles.map((item, index) => (
+              <ContactsList title={item} key={index} contacts={contacts} />
+            ))}
+          </ScrollView>
         ) : (
           <Text>Press button to get contacts</Text>
         )}
@@ -84,16 +137,40 @@ export default class App extends Component {
     )
   }
 
+  onTitlePressed = title => () => {
+    const { fadeAnim } = this.state
+    console.log(title)
+
+    Animated.timing(
+      // Animate over time
+      fadeAnim, // The animated value to drive
+      {
+        toValue: 0, // Animate to opacity: 1 (opaque)
+        duration: 10 // Make it take a while
+      }
+    ).start()
+
+    this.setState({
+      [title]: !this.state[title]
+    })
+  }
+
   onPressGetContacts = () => {
     this.setState({
-      isButtonPress: !this.state.isButtonPress
+      isButtonPress: true
     })
 
     Contacts.getAll((err, contacts) => {
       if (err) throw err
 
+      newContacts = contacts.map(item => `${item.familyName} ${item.givenName}`)
+
       // contacts returned
-      console.log(contacts)
+      console.log(newContacts)
+
+      this.setState({
+        contacts: newContacts
+      })
     })
   }
 }
@@ -114,5 +191,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#333333",
     marginBottom: 5
+  },
+  header: {
+    backgroundColor: "#CDDC39",
+    fontSize: 20,
+    padding: 5,
+    color: "#fff"
+  },
+  contacts: {
+    fontSize: 15,
+    padding: 5,
+    color: "#000",
+    backgroundColor: "#F5F5F5"
   }
 })
