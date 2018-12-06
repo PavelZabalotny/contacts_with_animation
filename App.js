@@ -1,37 +1,20 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow
- */
-
 import React, { Component } from "react"
 import {
   StyleSheet,
-  Text,
   View,
   Button,
   PermissionsAndroid,
-  SectionList,
-  Animated,
-  ScrollView
 } from "react-native"
 import Contacts from "react-native-contacts"
-import ContactsList from "./Components/ContactsList"
+import ContactsListWithButton from "./Components/ContactsListWithButton"
 
 export default class App extends Component {
-  state = {
-    isButtonPress: false,
-    //contacts: [],
-    listA: [],
-    listB: [],
-    titles: ["titleA", "titleB"],
-    contacts: [],
-    TitleA: true,
-    TitleB: true,
-    fadeAnim: new Animated.Value(1)
-    //isHidden: false
+  constructor() {
+    super()
+
+    this.state = {
+      isButtonPressed: false
+    }
   }
 
   async requestContactsPermission() {
@@ -78,108 +61,38 @@ export default class App extends Component {
   }
 
   render() {
-    const {
-      isButtonPress,
-      listA,
-      listB,
-      TitleA,
-      TitleB,
-      fadeAnim,
-      titles,
-      contacts
-    } = this.state
-    const a = TitleA ? listA : []
-    const b = TitleB ? listB : []
-
-    //newContacts = contacts.map(item => `${item.familyName} ${item.givenName}`)
-
-    /* const listA = newContacts.slice(0, 10)
-    const listB = newContacts.slice(10) */
+    const { isButtonPressed, contacts } = this.state
 
     return (
-      <View style={styles.container}>
-        <Button
-          onPress={this.onPressGetContacts}
-          title="Get contacts"
-          color="#841584"
-          accessibilityLabel="Get contacts from your phone"
-        />
-        {isButtonPress ? (
-          <ScrollView>
-            {/* <SectionList
-                sections={[
-                  { title: "TitleA", data: a },
-                  { title: "TitleB", data: b }
-                ]}
-                renderSectionHeader={({ section: { title } }) => (
-                  <Text
-                    style={styles.header}
-                    onPress={this.onTitlePressed(title)}
-                  >
-                    {title}
-                  </Text>
-                )}
-                renderItem={({ item }) => (
-                  <Animated.View style={{opacity: fadeAnim}}>
-                    <Text style={styles.contacts}>{item}</Text>
-                  </Animated.View>
-                )}
-                keyExtractor={(item, index) => index}
-              /> */}
-            {titles.map((item, index) => (
-              <ContactsList title={item} key={index} contacts={contacts} />
-            ))}
-          </ScrollView>
-        ) : (
-          <Text>Press button to get contacts</Text>
+      <View>
+        {!isButtonPressed && (
+          <Button title="Get contacts" onPress={this.onButtonPressed} />
         )}
+
+        {isButtonPressed && <ContactsListWithButton contacts={contacts} />}
       </View>
     )
   }
 
-  onTitlePressed = title => () => {
-    const { fadeAnim } = this.state
-    console.log(title)
-
-    Animated.timing(
-      // Animate over time
-      fadeAnim, // The animated value to drive
-      {
-        toValue: 0, // Animate to opacity: 1 (opaque)
-        duration: 10 // Make it take a while
-      }
-    ).start()
-
-    this.setState({
-      [title]: !this.state[title]
-    })
-  }
-
-  onPressGetContacts = () => {
-    this.setState({
-      isButtonPress: true
-    })
-
+  onButtonPressed = () => {
     Contacts.getAll((err, contacts) => {
       if (err) throw err
 
-      newContacts = contacts.map(item => `${item.familyName} ${item.givenName}`)
-
-      // contacts returned
-      console.log(newContacts)
+      const newContacts = contacts.map(
+        item => `${item.familyName} ${item.givenName}`
+      )
 
       this.setState({
+        isButtonPressed: true,
         contacts: newContacts
       })
     })
   }
 }
 
-const styles = StyleSheet.create({
+/* const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // justifyContent: "center",
-    // alignItems: "center",
     backgroundColor: "#F5FCFF"
   },
   welcome: {
@@ -204,4 +117,4 @@ const styles = StyleSheet.create({
     color: "#000",
     backgroundColor: "#F5F5F5"
   }
-})
+}) */
